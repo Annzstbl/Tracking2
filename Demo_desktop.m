@@ -41,30 +41,32 @@ initbox = [seq.init_rect(1:2) seq.init_rect(1:2)+seq.init_rect(3:4)-1];
 % obFeatureR = reshape(obFeature, [1,numel(obFeature)]);
 bgImg = get_bgFeature(img, initbox, myParams);
 x = fhog(im2single(bgImg), 8, 9);
+x(:, :, end) = [];
 xf = fft2(x);
+kernel = kernelSolve(xf, xf, kernelParams);
+w = eqSolve(kernel);
+for i = 1:20
+    for j = 1:8
+        index = (i - 1) * 8 + j;
+        scores(i, j) = kernel(index, :) * w';
+    end
+end
 
-bgFeature = fhog(im2single(bgImg), 8, 9);
-[kernel, W] = kernelSolve(obFeatureR, bgFeatureR, kernelParams);
-
-
-w = eqSolve(kernel, W);
-obScores = CalScores(obFeatureR, bgFeatureR, w, obFeatureR, kernelParams);
-% [bgNum, ~] = size(bgFeatureAll);
-% scores = zeros(bgNum, 1);
-% for i = 1 : bgNum
-%     scores(i) = CalScores(obFeatureR, bgFeatureR, w, bgFeatureAll(i,:), kernelParams);
-% end
-% 
-% X1 = bgWindowPosAll(:,1);
-% Y1 = bgWindowPosAll(:,2);
-% figure
-% scatter3(X1,Y1,scores);
-% X = unique(X1);
-% Y = unique(Y1);
-% [Xm, Ym] = meshgrid(X, Y);
-% figure
-% mesh(Xm, Ym, reshape(scores, [numel(Y), numel(X)]));
 ibox = initbox;
+obScores = CalScores(obFeatureR, bgFeatureR, w, obFeatureR, kernelParams);
+%% Tracking
+img = imread(seq.s_frames{2});
+bgImg = get_bgFeature(img, ibox, myParams);
+y = fhog(im2single(bgImg), 8, 9);
+y(:, :, end) = [];
+yf = fft2(y);
+skernel = kernelSolve(xf, yf, kernelParams);
+for i = 1:20
+    for j = 1:8
+        index = (i - 1) * 8 + j;
+        scores2(i, j) = skernel(index, :) * w';
+    end
+end
 %% Tracking
 for imgIndex = 77 : seq.len
     img = imread(seq.s_frames{imgIndex});
