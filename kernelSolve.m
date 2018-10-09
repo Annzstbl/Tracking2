@@ -1,4 +1,4 @@
-function [ K, W ] = kernelSolve( xf, yf, kernelParams )
+function [ K, W ] = kernelSolve( xf, yf, KParams )
     
 	N = size(xf,1) * size(xf,2);
 	xx = xf(:)' * xf(:) / N;  %squared norm of x
@@ -10,7 +10,7 @@ function [ K, W ] = kernelSolve( xf, yf, kernelParams )
 	
 	%calculate gaussian response for all positions, then go back to the
 	%Fourier domain
-    sigma = kernelParams.sigma;
+    sigma = KParams.sigma;
     k = exp(-1 / sigma^2 * max(0, (xx + yy - 2 * xy) / numel(xf)));
 % 	kf = fft2(exp(-1 / sigma^2 * max(0, (xx + yy - 2 * xy) / numel(xf))));
     [m, n] = size(k);
@@ -23,5 +23,9 @@ function [ K, W ] = kernelSolve( xf, yf, kernelParams )
             K((i - 1) * n + 1 : i * n, (j - 1) * n + 1 : j * n) = tempk;           
         end
     end
+    [ks, ~] = size(K);
+    Kbar = K - 2 / ks * K * ones(ks) + ...
+        1 / ks / ks * ones(ks) * K * ones(ks);
+    K = Kbar;
     W = 0;
 end

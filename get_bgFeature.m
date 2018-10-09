@@ -10,8 +10,8 @@ function [ bgImg ] = get_bgFeature( img,  box,  myParams)
     
     X(X < 1) = 1;
     Y(Y < 1) = 1;
-    X(X > imgSz(1)) = imgSz(1);
-    Y(Y > imgSz(2)) = imgSz(2);
+    X(X > imgSz(2)) = imgSz(2);
+    Y(Y > imgSz(1)) = imgSz(1);
     
     bgImg = img(Y, X, :);
 end
